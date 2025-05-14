@@ -1,0 +1,143 @@
+
+TABLE OF CONTENTS
+S.No.    Contents                Page No
+1        Introduction            1
+2        System Design           2
+3        Implementation          3
+4        Conclusion              4
+5        References              5
+
+
+INTRODUCTION
+
+	The Dining Philosophers Problem is a fundamental synchronization problem in the field of operating systems and concurrent programming. It models the challenges of allocating limited shared resources (forks) among multiple competing processes (philosophers) in a way that avoids deadlock and starvation. The primary objective of this project is to simulate the Dining Philosophers Problem using the Monitor concept in Java, demonstrating the application of mutual exclusion, condition synchronization, and resource allocation strategies. This project aims to provide a practical understanding of process synchronization, monitor-based design, and the importance of safe concurrent system development.
+
+	Project Outcomes and Objectives
+
+	- To understand and implement the monitor concept for process synchronization.
+	- To simulate the Dining Philosophers Problem and analyze its behavior.
+	- To demonstrate avoidance of deadlock and starvation in concurrent systems.
+	- To gain hands-on experience with Java thread synchronization and inter-thread communication.
+
+
+SYSTEM DESIGN
+
+	System Architecture
+
+	The system is architected around the classical Dining Philosophers Problem, where N philosophers sit around a table with one fork between each pair. Each philosopher alternates between thinking and eating. To eat, a philosopher must acquire both the left and right forks. The monitor acts as a controller, ensuring that no two neighboring philosophers eat simultaneously, thus preventing deadlock and starvation.
+
+	[Insert System Architecture Diagram Here]
+
+	Modules
+
+	1. Philosopher Thread: Represents each philosopher as a concurrent thread, managing their states (THINKING, HUNGRY, EATING) and simulating their actions.
+	2. Monitor: Implements the synchronization logic using Java's synchronized methods and wait/notifyAll mechanisms. It manages the state of each philosopher and coordinates access to forks.
+
+	[Insert Module Interaction Diagram Here]
+
+	Backend Design
+
+	The backend is implemented in Java, leveraging object-oriented principles and built-in concurrency primitives. The monitor maintains an array to track the state of each philosopher and provides synchronized methods for philosophers to request and release forks. Condition synchronization is achieved using wait and notifyAll, ensuring that philosophers only proceed to eat when it is safe to do so.
+
+
+
+IMPLEMENTATION
+
+	Modules Implementation
+
+	- Philosopher threads are created for each philosopher, each running an infinite loop of thinking and eating.
+	- The monitor uses an integer array to track the state of each philosopher.
+	- The takeForks and putForks methods are synchronized to ensure mutual exclusion.
+	- The test method checks if a philosopher can eat based on the state of their neighbors.
+	- The monitor uses wait and notifyAll to manage condition synchronization and prevent deadlock.
+
+	[Insert Sequence Diagram or Flowchart Here]
+
+	Sample Code
+
+	public class DiningPhilosophersMonitor {
+		private final int N;
+		private final int[] state;
+		private static final int THINKING = 0, HUNGRY = 1, EATING = 2;
+
+		public DiningPhilosophersMonitor(int n) {
+			N = n;
+			state = new int[N];
+		}
+
+		private synchronized void takeForks(int i) throws InterruptedException {
+			state[i] = HUNGRY;
+			test(i);
+			while (state[i] != EATING) wait();
+		}
+
+		private synchronized void putForks(int i) {
+			state[i] = THINKING;
+			test((i + N - 1) % N);
+			test((i + 1) % N);
+			notifyAll();
+		}
+
+		private void test(int i) {
+			if (state[i] == HUNGRY && state[(i + N - 1) % N] != EATING && state[(i + 1) % N] != EATING) {
+				state[i] = EATING;
+				notifyAll();
+			}
+		}
+
+		class Philosopher extends Thread {
+			int id;
+			Philosopher(int id) { this.id = id; }
+			public void run() {
+				try {
+					while (true) {
+						System.out.println("Philosopher " + id + " is THINKING");
+						Thread.sleep((int)(Math.random() * 1000) + 500);
+						takeForks(id);
+						System.out.println("Philosopher " + id + " is EATING");
+						Thread.sleep((int)(Math.random() * 1000) + 500);
+						putForks(id);
+					}
+				} catch (InterruptedException e) {}
+			}
+		}
+
+		public void startSimulation() {
+			for (int i = 0; i < N; i++) new Philosopher(i).start();
+		}
+
+		public static void main(String[] args) {
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Enter number of philosophers: ");
+			int n = sc.nextInt();
+			new DiningPhilosophersMonitor(n).startSimulation();
+		}
+	}
+
+	Sample Output
+
+	Enter number of philosophers: 3
+	Philosopher 1 is THINKING
+	Philosopher 0 is THINKING
+	Philosopher 2 is THINKING
+	Philosopher 0 is EATING
+	Philosopher 0 is THINKING
+	Philosopher 2 is EATING
+	Philosopher 2 is THINKING
+	Philosopher 1 is EATING
+	...
+
+	[Insert Output Screenshot Here]
+
+
+CONCLUSION
+
+	The Dining Philosophers Monitor solution effectively demonstrates the application of monitors for process synchronization in operating systems. By using Java's synchronized methods and condition variables, the implementation ensures that all philosophers can eat and think without deadlock or starvation. This project reinforces the importance of proper synchronization mechanisms in concurrent programming and provides valuable insights into designing safe and efficient multi-threaded systems.
+
+
+REFERENCES
+
+	1. Silberschatz, A., Galvin, P. B., & Gagne, G. Operating System Concepts, 10th Edition, Wiley.
+	2. Java Documentation: https://docs.oracle.com/javase/8/docs/api/
+	3. Wikipedia: https://en.wikipedia.org/wiki/Dining_philosophers_problem
+	4. Project source code and class notes
